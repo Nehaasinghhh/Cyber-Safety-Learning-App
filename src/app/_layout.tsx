@@ -1,18 +1,53 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+
+import { DarkTheme, DefaultTheme, ThemeProvider, Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
+export default function RootLayout() {
   const colorScheme = useColorScheme();
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+      <Stack>
+        <Stack.Screen
+          name="index"
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="lessons/[id]"
+          options={{ title: 'Learning Module' }}
+        />
+
+        <Stack.Screen
+          name="lessons/module-3"
+          options={{ title: 'Module 3' }}
+        />
+
+        <Stack.Screen
+          name="lessons/module-4"
+          options={{ title: 'Module 4' }}
+        />
+
+        <Stack.Screen
+          name="lessons/module-5"
+          options={{ title: 'Module 5' }}
+        />
+
+        <Stack.Screen
+          name="lessons/module-6"
+          options={{ title: 'Module 6' }}
+        />
+
+        <Stack.Screen
+          name="red-flags"
+          options={{ title: 'Spot the Red Flags' }}
+        />
+
+        <Stack.Screen
+          name="quiz"
+          options={{ title: 'Cyber Safety Quiz' }}
+        />
+      </Stack>
     </ThemeProvider>
   );
 }
