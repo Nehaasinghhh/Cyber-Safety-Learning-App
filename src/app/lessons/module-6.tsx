@@ -7,18 +7,19 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const colors = {
-  navy: '#102F50',
-  orange: '#E58B00',
-  teal: '#087879',
-  green: '#218044',
-  purple: '#81308D',
-  red: '#D53D32',
+  navy: '#172554',
+  orange: '#4F46E5',
+  teal: '#0D9488',
+  green: '#0D9488',
+  purple: '#6366F1',
+  red: '#E11D48',
   white: '#FFFFFF',
-  background: '#F1F6FA',
-  text: '#3F5E87',
-  border: '#D8E3ED',
+  background: '#F8FAFC',
+  text: '#475569',
+  border: '#E2E8F0',
 };
 
 const protocol = [
@@ -240,6 +241,8 @@ export default function Module6() {
         style={styles.screen}
         contentContainerStyle={styles.content}
       >
+        <Animated.View entering={FadeInDown.duration(500)}>
+
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>
             School Response, Prevention & Action Commitment
@@ -264,7 +267,7 @@ export default function Module6() {
               <Text style={styles.scenarioText}>{scenario.situation}</Text>
               <Text style={styles.riskText}>{scenario.risk}</Text>
               <Text style={styles.scenarioText}>{scenario.action}</Text>
-            </View>
+            </View> 
           </View>
         ))}
 
@@ -343,6 +346,7 @@ export default function Module6() {
             <Text style={styles.resourceLabel}>Vihaan</Text>
           </View>
         </View>
+              </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );

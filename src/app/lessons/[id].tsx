@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -10,12 +11,12 @@ import {
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-const NAVY = '#102F50';
-const ORANGE = '#ED5B19';
-const RED = '#BD3D32';
-const GREEN = '#249D62';
-const BG = '#F2F5FA';
-const MUTED = '#5F7188';
+const NAVY = '#172554';
+const ORANGE = '#4F46E5';
+const RED = '#E11D48';
+const GREEN = '#0D9488';
+const BG = '#F8FAFC';
+const MUTED = '#64748B';
 
 const threats = [
   {
@@ -181,6 +182,8 @@ export default function LessonScreen() {
         contentContainerStyle={styles.page}
         showsVerticalScrollIndicator={false}
       >
+        <Animated.View entering={FadeInDown.duration(500)}>
+
         {/* PDF title slide */}
         <View style={styles.hero}>
           <View style={styles.orangeEdge} />
@@ -473,6 +476,7 @@ export default function LessonScreen() {
             Know the threats. Build the habits.
           </Text>
         </View>
+              </Animated.View>
       </ScrollView>
     </>
   );
@@ -659,3 +663,6 @@ const styles = StyleSheet.create({
   notReadyTitle: { fontSize: 22, fontWeight: '800', color: NAVY, marginTop: 16, marginBottom: 8 },
   bodyText: { fontSize: 14, lineHeight: 22, textAlign: 'center', color: MUTED },
 });
+ 1
+
+

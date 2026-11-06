@@ -1,5 +1,6 @@
 
 import { Stack, router } from 'expo-router';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useState } from 'react';
 import {
   Pressable,
@@ -9,10 +10,10 @@ import {
   View,
 } from 'react-native';
 
-const NAVY = '#102F50';
-const ORANGE = '#ED5B19';
-const RED = '#BD3D32';
-const GREEN = '#249D62';
+const NAVY = '#172554';
+const ORANGE = '#4F46E5';
+const RED = '#E11D48';
+const GREEN = '#0D9488';
 
 const impacts = [
   {
@@ -102,6 +103,8 @@ export default function ModuleThreeScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <Animated.View entering={FadeInDown.duration(500)}>
+
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>MODULE 03</Text>
           <Text style={styles.heroTitle}>
@@ -227,6 +230,7 @@ export default function ModuleThreeScreen() {
         <Text style={styles.footer}>
           CYBER SAFETY & SECURITY • LEARN • RECOGNISE • RESPOND
         </Text>
+              </Animated.View>
       </ScrollView>
     </>
   );
@@ -523,3 +527,4 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
 });
+ 

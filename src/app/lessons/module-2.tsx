@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   ScrollView,
   View,
@@ -9,11 +10,11 @@ import {
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 
-const NAVY = '#102F50';
-const ORANGE = '#ED5B19';
-const BG = '#F2F5FA';
-const RED = '#BD3D32';
-const GREEN = '#249D62';
+const NAVY = '#172554';
+const ORANGE = '#4F46E5';
+const BG = '#F8FAFC';
+const RED = '#E11D48';
+const GREEN = '#0D9488';
 
 const risks = [
   {
@@ -126,6 +127,8 @@ export default function ModuleTwo() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        <Animated.View entering={FadeInDown.duration(500)}>
+
         <View style={styles.hero}>
           <Text style={styles.moduleNumber}>MODULE 02</Text>
           <Text style={styles.heroTitle}>
@@ -359,6 +362,7 @@ export default function ModuleTwo() {
         <Text style={styles.footer}>
           CYBER SAFETY & SECURITY • LEARN • RECOGNISE • RESPOND
         </Text>
+              </Animated.View>
       </ScrollView>
     </>
   );
