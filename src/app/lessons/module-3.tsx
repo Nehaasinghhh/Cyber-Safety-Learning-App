@@ -1,7 +1,8 @@
-
+import { Alert } from 'react-native';
+import { getCompletedModules, markModuleCompleted } from '../../utils/progress';
 import { Stack, router } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -73,6 +74,33 @@ export default function ModuleThreeScreen() {
   const [checked, setChecked] = useState<number[]>([]);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
+  const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [savingCompletion, setSavingCompletion] = useState(false);
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      const completed = await getCompletedModules();
+      setModuleCompleted(completed.includes('3'));
+    };
+
+    loadProgress();
+  }, []);
+
+  const handleCompleteModule = async () => {
+    if (moduleCompleted || savingCompletion) return;
+
+    setSavingCompletion(true);
+
+    try {
+      await markModuleCompleted('3');
+      setModuleCompleted(true);
+      Alert.alert('Congratulations!', 'Module 3 completed successfully.');
+    } catch (error) {
+      Alert.alert('Error', 'Could not save your progress. Please try again.');
+    } finally {
+      setSavingCompletion(false);
+    }
+  };
 
   function toggleStatement(index: number) {
     setChecked((previous) =>
@@ -86,6 +114,8 @@ export default function ModuleThreeScreen() {
     setAnswers((previous) => ({ ...previous, [index]: option }));
     setShowResults(false);
   }
+
+  
 
   return (
     <>
@@ -221,6 +251,23 @@ export default function ModuleThreeScreen() {
         
 
         <Pressable
+          style={[
+            styles.completeButton,
+            moduleCompleted && styles.completedButton,
+          ]}
+          onPress={handleCompleteModule}
+          disabled={moduleCompleted || savingCompletion}
+        >
+          <Text style={styles.completeButtonText}>
+            {moduleCompleted
+              ? '✓ Module 3 Completed'
+              : savingCompletion
+              ? 'Saving Progress...'
+              : 'Complete Module 3'}
+          </Text>
+        </Pressable>
+
+        <Pressable
           style={styles.backButton}
           onPress={() => router.replace('/')}
         >
@@ -235,6 +282,7 @@ export default function ModuleThreeScreen() {
     </>
   );
 }
+
 
 const styles = StyleSheet.create({
   screen: {
@@ -526,5 +574,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 17,
   },
+  completeButton: {
+    backgroundColor: GREEN,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+
+  completedButton: {
+    backgroundColor: '#64748B',
+  },
+
+  completeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
 });
- 

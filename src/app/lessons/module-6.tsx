@@ -1,13 +1,16 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
   View,
+  Pressable,
+  Alert,
 } from 'react-native';
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { getCompletedModules, markModuleCompleted } from '../../utils/progress';
 
 const colors = {
   navy: '#172554',
@@ -235,6 +238,34 @@ function NumberedCards({
 }
 
 export default function Module6() {
+  const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [savingCompletion, setSavingCompletion] = useState(false);
+
+  useEffect(() => {
+    const loadProgress = async () => {
+      const completed = await getCompletedModules();
+      setModuleCompleted(completed.includes('6'));
+    };
+
+    loadProgress();
+  }, []);
+
+  const handleCompleteModule = async () => {
+    if (moduleCompleted || savingCompletion) return;
+
+    setSavingCompletion(true);
+
+    try {
+      await markModuleCompleted('6');
+      setModuleCompleted(true);
+      Alert.alert('Congratulations!', 'Module 6 completed successfully.');
+    } catch (error) {
+      Alert.alert('Error', 'Could not save your progress. Please try again.');
+    } finally {
+      setSavingCompletion(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -346,7 +377,32 @@ export default function Module6() {
             <Text style={styles.resourceLabel}>Vihaan</Text>
           </View>
         </View>
-              </Animated.View>
+
+        <Pressable
+          style={[
+            styles.completeButton,
+            moduleCompleted && styles.completedButton,
+          ]}
+          onPress={handleCompleteModule}
+          disabled={moduleCompleted || savingCompletion}
+        >
+          <Text style={styles.completeButtonText}>
+            {moduleCompleted
+              ? '✓ Module 6 Completed'
+              : savingCompletion
+              ? 'Saving Progress...'
+              : 'Complete Module 6'}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.homeButton}
+          onPress={() => router.replace('/')}
+        >
+          <Text style={styles.homeButtonText}>← Back to Home</Text>
+        </Pressable>
+
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -606,5 +662,30 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     marginTop: 4,
+  },
+  completeButton: {
+    backgroundColor: colors.teal,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  completedButton: {
+    backgroundColor: '#64748B',
+  },
+  completeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  homeButton: {
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  homeButtonText: {
+    color: colors.navy,
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

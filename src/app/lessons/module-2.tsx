@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   ScrollView,
@@ -7,8 +7,13 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  Alert,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
+import {
+  getCompletedModules,
+  markModuleCompleted,
+} from '../../utils/progress';
 
 const NAVY = '#172554';
 const ORANGE = '#4F46E5';
@@ -102,6 +107,32 @@ export default function ModuleTwo() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
 
+  const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [savingCompletion, setSavingCompletion] = useState(false);
+
+  // Load saved Module 2 completion status
+  useEffect(() => {
+    let active = true;
+
+    const loadCompletion = async () => {
+      try {
+        const completedModules = await getCompletedModules();
+
+        if (active) {
+          setModuleCompleted(completedModules.includes('2'));
+        }
+      } catch (error) {
+        console.log('Error loading Module 2 progress:', error);
+      }
+    };
+
+    loadCompletion();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const score = quiz.filter(
     (item, index) => answers[index] === item.answer,
   ).length;
@@ -110,6 +141,50 @@ export default function ModuleTwo() {
     setAnswers((previous) => ({ ...previous, [index]: answer }));
     setShowResults(false);
   }
+
+  // Save Module 2 completion
+  const handleCompleteModule = async () => {
+    if (Object.keys(answers).length !== quiz.length || !showResults) {
+      Alert.alert(
+        'Quiz Incomplete',
+        'Please answer all questions and check your answers before completing this module.',
+      );
+      return;
+    }
+
+    if (moduleCompleted || savingCompletion) {
+      return;
+    }
+
+    try {
+      setSavingCompletion(true);
+
+      const completedModules = await markModuleCompleted('2');
+
+      if (completedModules.includes('2')) {
+        setModuleCompleted(true);
+
+        Alert.alert(
+          'Module Completed!',
+          'Module 2 has been completed. Your dashboard progress has been updated.',
+        );
+      } else {
+        Alert.alert(
+          'Unable to Save',
+          'Your progress could not be saved. Please try again.',
+        );
+      }
+    } catch (error) {
+      console.log('Error saving Module 2 progress:', error);
+
+      Alert.alert(
+        'Error',
+        'Something went wrong while saving your progress.',
+      );
+    } finally {
+      setSavingCompletion(false);
+    }
+  };
 
   return (
     <>
@@ -129,240 +204,261 @@ export default function ModuleTwo() {
       >
         <Animated.View entering={FadeInDown.duration(500)}>
 
-        <View style={styles.hero}>
-          <Text style={styles.moduleNumber}>MODULE 02</Text>
-          <Text style={styles.heroTitle}>
-            Psychological Dimensions of Cyber Risk
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            Understand the harm. Listen without judgement. Help children feel safe.
-          </Text>
-        </View>
-
-        <View style={styles.introCard}>
-          <Text style={styles.sectionTitle}>What happens to the mind?</Text>
-          <Text style={styles.body}>
-            Online harm does not only affect devices or accounts. It can also
-            affect a child’s emotions, confidence, sleep, and sense of safety.
-            Learn to recognise the risks and respond with care.
-          </Text>
-        </View>
-
-        <Text style={styles.heading}>The Six Psychological Dimensions</Text>
-
-        {risks.map((risk, index) => (
-          <View key={risk.title} style={styles.riskCard}>
-            <View style={styles.riskHeader}>
-              <View style={styles.iconCircle}>
-                <Text style={styles.riskIcon}>{risk.icon}</Text>
-              </View>
-              <View style={styles.riskHeadingContainer}>
-                <Text style={styles.riskNumber}>
-                  RISK {String(index + 1).padStart(2, '0')}
-                </Text>
-                <Text style={styles.riskTitle}>{risk.title}</Text>
-              </View>
-            </View>
-            <Text style={styles.body}>{risk.description}</Text>
+          <View style={styles.hero}>
+            <Text style={styles.moduleNumber}>MODULE 02</Text>
+            <Text style={styles.heroTitle}>
+              Psychological Dimensions of Cyber Risk
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Understand the harm. Listen without judgement. Help children feel safe.
+            </Text>
           </View>
-        ))}
 
-        <Text style={styles.heading}>Psychological Consequences</Text>
-
-        <View style={styles.consequenceCard}>
-          <Text style={styles.consequenceTitle}>1. Immediate response</Text>
-          <Text style={styles.body}>
-            Panic, fear, frustration, and anger. These are possible and
-            understandable reactions to a distressing online experience.
-          </Text>
-        </View>
-
-        <View style={styles.consequenceCard}>
-          <Text style={styles.consequenceTitle}>2. Self-blame and helplessness</Text>
-          <Text style={styles.body}>
-            A child may think, “It’s my fault.” Shame can make it harder for
-            them to ask for help or tell a trusted adult.
-          </Text>
-        </View>
-
-        <View style={styles.warningCard}>
-          <Text style={styles.warningTitle}>3. Clinical consequences</Text>
-          <Text style={styles.body}>
-            The PDF identifies acute stress disorder, depression, and Gaming
-            Disorder as possible clinical consequences.
-          </Text>
-        </View>
-
-        <View style={styles.caseBanner}>
-          <Text style={styles.caseBannerTitle}>
-            📋 Case Study: Cyberbullying, Image-Based Abuse & Self-Blame
-          </Text>
-        </View>
-
-        <View style={styles.caseCard}>
-          <Text style={styles.body}>
-            A 14-year-old girl had been in an online friendship group with
-            classmates. One boy began sending her private messages asking for
-            photographs. She refused.
-          </Text>
-
-          <Text style={styles.body}>
-            Within a week, a doctored photograph appeared in a class WhatsApp
-            group. She stopped attending school.
-          </Text>
-
-          <Text style={styles.body}>
-            When her teacher spoke to her, she said: “I should not have been
-            in that group. It is my fault.” She had not slept properly in
-            three weeks.
-          </Text>
-        </View>
-
-        <View style={styles.harmsCard}>
-          <Text style={styles.harmsTitle}>Harms Present in the Case</Text>
-          {[
-            'Cyberbullying',
-            'Online grooming attempt',
-            'Image-based abuse',
-            'Acute stress disorder',
-            'Sleep disruption',
-            'Self-blame blocking help',
-          ].map((harm) => (
-            <Text key={harm} style={styles.harmItem}>
-              <Text style={styles.redDot}>● </Text>
-              {harm}
+          <View style={styles.introCard}>
+            <Text style={styles.sectionTitle}>What happens to the mind?</Text>
+            <Text style={styles.body}>
+              Online harm does not only affect devices or accounts. It can also
+              affect a child’s emotions, confidence, sleep, and sense of safety.
+              Learn to recognise the risks and respond with care.
             </Text>
-          ))}
-        </View>
+          </View>
 
-        <View style={styles.quoteCard}>
-          <Text style={styles.quote}>
-            “I should not have been in that group. It is my fault.”
-          </Text>
-        </View>
+          <Text style={styles.heading}>The Six Psychological Dimensions</Text>
 
-        <View style={styles.whyCard}>
-          <Text style={styles.whyTitle}>Why didn’t she tell?</Text>
-          <Text style={styles.body}>
-            Self-blame. Shame. Fear.
-          </Text>
-          <Text style={styles.body}>
-            She believed it was her own fault for being in the group. Children
-            may fear punishment or worry that adults will blame them.
-          </Text>
-        </View>
-
-        <View style={styles.responseCard}>
-          <Text style={styles.responseTitle}>💡 How should an adult respond?</Text>
-          {[
-            'Listen calmly and without judgement.',
-            'Reassure the child that asking for help was the right thing to do.',
-            'Do not blame, shame, or punish the child for reporting the incident.',
-            'Follow the school’s safeguarding procedures and involve the appropriate child-protection personnel.',
-            'Preserve relevant evidence, such as screenshots and URLs, in line with school procedures.',
-          ].map((step, index) => (
-            <Text key={step} style={styles.responseItem}>
-              {index + 1}. {step}
-            </Text>
-          ))}
-          <Text style={styles.responseFooter}>
-            The response must go beyond “just block” — these can be clinical,
-            real harms.
-          </Text>
-        </View>
-
-        <Text style={styles.heading}>Knowledge Check</Text>
-        <Text style={styles.quizIntro}>
-          Choose the best answer for each question.
-        </Text>
-
-        {quiz.map((item, index) => (
-          <View key={item.question} style={styles.quizCard}>
-            <Text style={styles.questionNumber}>
-              QUESTION {index + 1} OF {quiz.length}
-            </Text>
-            <Text style={styles.question}>{item.question}</Text>
-
-            {item.options.map((option) => {
-              const selected = answers[index] === option;
-              const correct = showResults && option === item.answer;
-              const incorrect =
-                showResults && selected && option !== item.answer;
-
-              return (
-                <Pressable
-                  key={option}
-                  onPress={() => chooseAnswer(index, option)}
-                  style={[
-                    styles.option,
-                    selected && styles.selectedOption,
-                    correct && styles.correctOption,
-                    incorrect && styles.incorrectOption,
-                  ]}
-                >
-                  <Text style={styles.optionText}>
-                    {selected ? '◉  ' : '○  '}
-                    {option}
+          {risks.map((risk, index) => (
+            <View key={risk.title} style={styles.riskCard}>
+              <View style={styles.riskHeader}>
+                <View style={styles.iconCircle}>
+                  <Text style={styles.riskIcon}>{risk.icon}</Text>
+                </View>
+                <View style={styles.riskHeadingContainer}>
+                  <Text style={styles.riskNumber}>
+                    RISK {String(index + 1).padStart(2, '0')}
                   </Text>
-                </Pressable>
-              );
-            })}
+                  <Text style={styles.riskTitle}>{risk.title}</Text>
+                </View>
+              </View>
+              <Text style={styles.body}>{risk.description}</Text>
+            </View>
+          ))}
 
-            {showResults && (
-              <Text style={styles.explanation}>
-                {answers[index] === item.answer ? 'Correct! ' : 'Answer: '}
-                {item.explanation}
-              </Text>
-            )}
+          <Text style={styles.heading}>Psychological Consequences</Text>
+
+          <View style={styles.consequenceCard}>
+            <Text style={styles.consequenceTitle}>1. Immediate response</Text>
+            <Text style={styles.body}>
+              Panic, fear, frustration, and anger. These are possible and
+              understandable reactions to a distressing online experience.
+            </Text>
           </View>
-        ))}
 
-        {showResults && (
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreTitle}>Your Score</Text>
-            <Text style={styles.score}>
-              {score} / {quiz.length}
+          <View style={styles.consequenceCard}>
+            <Text style={styles.consequenceTitle}>2. Self-blame and helplessness</Text>
+            <Text style={styles.body}>
+              A child may think, “It’s my fault.” Shame can make it harder for
+              them to ask for help or tell a trusted adult.
+            </Text>
+          </View>
+
+          <View style={styles.warningCard}>
+            <Text style={styles.warningTitle}>3. Clinical consequences</Text>
+            <Text style={styles.body}>
+              The PDF identifies acute stress disorder, depression, and Gaming
+              Disorder as possible clinical consequences.
+            </Text>
+          </View>
+
+          <View style={styles.caseBanner}>
+            <Text style={styles.caseBannerTitle}>
+              📋 Case Study: Cyberbullying, Image-Based Abuse & Self-Blame
+            </Text>
+          </View>
+
+          <View style={styles.caseCard}>
+            <Text style={styles.body}>
+              A 14-year-old girl had been in an online friendship group with
+              classmates. One boy began sending her private messages asking for
+              photographs. She refused.
+            </Text>
+
+            <Text style={styles.body}>
+              Within a week, a doctored photograph appeared in a class WhatsApp
+              group. She stopped attending school.
+            </Text>
+
+            <Text style={styles.body}>
+              When her teacher spoke to her, she said: “I should not have been
+              in that group. It is my fault.” She had not slept properly in
+              three weeks.
+            </Text>
+          </View>
+
+          <View style={styles.harmsCard}>
+            <Text style={styles.harmsTitle}>Harms Present in the Case</Text>
+            {[
+              'Cyberbullying',
+              'Online grooming attempt',
+              'Image-based abuse',
+              'Acute stress disorder',
+              'Sleep disruption',
+              'Self-blame blocking help',
+            ].map((harm) => (
+              <Text key={harm} style={styles.harmItem}>
+                <Text style={styles.redDot}>● </Text>
+                {harm}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.quoteCard}>
+            <Text style={styles.quote}>
+              “I should not have been in that group. It is my fault.”
+            </Text>
+          </View>
+
+          <View style={styles.whyCard}>
+            <Text style={styles.whyTitle}>Why didn’t she tell?</Text>
+            <Text style={styles.body}>
+              Self-blame. Shame. Fear.
             </Text>
             <Text style={styles.body}>
-              {score === quiz.length
-                ? 'Excellent! You understand the key ideas.'
-                : 'Review the explanations and try again.'}
+              She believed it was her own fault for being in the group. Children
+              may fear punishment or worry that adults will blame them.
             </Text>
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => {
-                setAnswers({});
-                setShowResults(false);
-              }}
-            >
-              <Text style={styles.secondaryButtonText}>Try Again</Text>
-            </Pressable>
           </View>
-        )}
 
-        <Pressable
-          style={[
-            styles.primaryButton,
-            Object.keys(answers).length !== quiz.length &&
-              styles.disabledButton,
-          ]}
-          disabled={Object.keys(answers).length !== quiz.length}
-          onPress={() => setShowResults(true)}
-        >
-          <Text style={styles.primaryButtonText}>Check My Answers</Text>
-        </Pressable>
+          <View style={styles.responseCard}>
+            <Text style={styles.responseTitle}>💡 How should an adult respond?</Text>
+            {[
+              'Listen calmly and without judgement.',
+              'Reassure the child that asking for help was the right thing to do.',
+              'Do not blame, shame, or punish the child for reporting the incident.',
+              'Follow the school’s safeguarding procedures and involve the appropriate child-protection personnel.',
+              'Preserve relevant evidence, such as screenshots and URLs, in line with school procedures.',
+            ].map((step, index) => (
+              <Text key={step} style={styles.responseItem}>
+                {index + 1}. {step}
+              </Text>
+            ))}
+            <Text style={styles.responseFooter}>
+              The response must go beyond “just block” — these can be clinical,
+              real harms.
+            </Text>
+          </View>
 
-        <Pressable
-          style={styles.backButton}
-          onPress={() => router.replace('/')}
-        >
-          <Text style={styles.backButtonText}>← Back to Home</Text>
-        </Pressable>
+          <Text style={styles.heading}>Knowledge Check</Text>
+          <Text style={styles.quizIntro}>
+            Choose the best answer for each question.
+          </Text>
 
-        <Text style={styles.footer}>
-          CYBER SAFETY & SECURITY • LEARN • RECOGNISE • RESPOND
-        </Text>
-              </Animated.View>
+          {quiz.map((item, index) => (
+            <View key={item.question} style={styles.quizCard}>
+              <Text style={styles.questionNumber}>
+                QUESTION {index + 1} OF {quiz.length}
+              </Text>
+              <Text style={styles.question}>{item.question}</Text>
+
+              {item.options.map((option) => {
+                const selected = answers[index] === option;
+                const correct = showResults && option === item.answer;
+                const incorrect =
+                  showResults && selected && option !== item.answer;
+
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => chooseAnswer(index, option)}
+                    style={[
+                      styles.option,
+                      selected && styles.selectedOption,
+                      correct && styles.correctOption,
+                      incorrect && styles.incorrectOption,
+                    ]}
+                  >
+                    <Text style={styles.optionText}>
+                      {selected ? '◉  ' : '○  '}
+                      {option}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+
+              {showResults && (
+                <Text style={styles.explanation}>
+                  {answers[index] === item.answer ? 'Correct! ' : 'Answer: '}
+                  {item.explanation}
+                </Text>
+              )}
+            </View>
+          ))}
+
+          {showResults && (
+            <View style={styles.scoreCard}>
+              <Text style={styles.scoreTitle}>Your Score</Text>
+              <Text style={styles.score}>
+                {score} / {quiz.length}
+              </Text>
+              <Text style={styles.body}>
+                {score === quiz.length
+                  ? 'Excellent! You understand the key ideas.'
+                  : 'Review the explanations and try again.'}
+              </Text>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => {
+                  setAnswers({});
+                  setShowResults(false);
+                }}
+              >
+                <Text style={styles.secondaryButtonText}>Try Again</Text>
+              </Pressable>
+            </View>
+          )}
+
+          <Pressable
+            style={[
+              styles.primaryButton,
+              Object.keys(answers).length !== quiz.length &&
+                styles.disabledButton,
+            ]}
+            disabled={Object.keys(answers).length !== quiz.length}
+            onPress={() => setShowResults(true)}
+          >
+            <Text style={styles.primaryButtonText}>Check My Answers</Text>
+          </Pressable>
+
+          {/* Module 2 completion button */}
+          {showResults && (
+            <Pressable
+              onPress={handleCompleteModule}
+              disabled={moduleCompleted || savingCompletion}
+              style={[
+                styles.completeButton,
+                moduleCompleted && styles.completedButton,
+              ]}
+            >
+              <Text style={styles.completeButtonText}>
+                {moduleCompleted
+                  ? '✓ Module 2 Completed'
+                  : savingCompletion
+                    ? 'Saving Progress...'
+                    : 'Complete Module 2'}
+              </Text>
+            </Pressable>
+          )}
+
+          <Pressable
+            style={styles.backButton}
+            onPress={() => router.replace('/')}
+          >
+            <Text style={styles.backButtonText}>← Back to Home</Text>
+          </Pressable>
+
+          <Text style={styles.footer}>
+            CYBER SAFETY & SECURITY • LEARN • RECOGNISE • RESPOND
+          </Text>
+
+        </Animated.View>
       </ScrollView>
     </>
   );
@@ -693,6 +789,21 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: NAVY,
+    fontWeight: '800',
+  },
+  completeButton: {
+    backgroundColor: GREEN,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  completedButton: {
+    backgroundColor: '#15803D',
+  },
+  completeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '800',
   },
   backButton: {

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import {
   ScrollView,
@@ -7,8 +6,10 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  Alert,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
+import { getCompletedModules, markModuleCompleted } from '../../utils/progress';
 
 const NAVY = '#172554';
 const ORANGE = '#4F46E5';
@@ -141,7 +142,33 @@ const laws = [
 export default function ModuleFiveScreen() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
+  const [moduleCompleted, setModuleCompleted] = useState(false);
+  const [savingCompletion, setSavingCompletion] = useState(false);
 
+  useEffect(() => {
+    const loadProgress = async () => {
+      const completed = await getCompletedModules();
+      setModuleCompleted(completed.includes('5'));
+    };
+
+    loadProgress();
+  }, []);
+
+  const handleCompleteModule = async () => {
+    if (moduleCompleted || savingCompletion) return;
+
+    setSavingCompletion(true);
+
+    try {
+      await markModuleCompleted('5');
+      setModuleCompleted(true);
+      Alert.alert('Congratulations!', 'Module 5 completed successfully.');
+    } catch (error) {
+      Alert.alert('Error', 'Could not save your progress. Please try again.');
+    } finally {
+      setSavingCompletion(false);
+    }
+  };
 
   return (
     <>
@@ -304,6 +331,22 @@ export default function ModuleFiveScreen() {
           </Text>
         </View>
 
+        <Pressable
+          style={[
+            styles.completeButton,
+            moduleCompleted && styles.completedButton,
+          ]}
+          onPress={handleCompleteModule}
+          disabled={moduleCompleted || savingCompletion}
+        >
+          <Text style={styles.completeButtonText}>
+            {moduleCompleted
+              ? '✓ Module 5 Completed'
+              : savingCompletion
+              ? 'Saving Progress...'
+              : 'Complete Module 5'}
+          </Text>
+        </Pressable>
 
         <Pressable
           style={styles.backButton}
@@ -642,6 +685,21 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  completeButton: {
+    backgroundColor: GREEN,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  completedButton: {
+    backgroundColor: '#64748B',
+  },
+  completeButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '800',

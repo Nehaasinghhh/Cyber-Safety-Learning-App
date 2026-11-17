@@ -1,11 +1,14 @@
 
+import React, { useCallback, useState } from 'react';
+import { getCompletedModules } from '../utils/progress';
+
 import Animated, {
   FadeInDown,
   FadeInUp,
 } from 'react-native-reanimated';
 
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 
 import {
   Pressable,
@@ -79,6 +82,34 @@ const safetyTips = [
 ];
 
 export default function HomeScreen() {
+  // Learning progress state
+  const [completedModules, setCompletedModules] = useState<string[]>([]);
+
+  // Load saved progress whenever the dashboard becomes active
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const loadProgress = async () => {
+        const completed = await getCompletedModules();
+
+        if (isActive) {
+          setCompletedModules(completed);
+        }
+      };
+
+      loadProgress();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
+  // Calculate completed lessons and percentage
+  const completedCount = completedModules.length;
+  const progressPercent = Math.round((completedCount / 6) * 100);
+
   // Open learning modules
   const openModule = (module: (typeof modules)[number]) => {
     if (module.id === '1') {
@@ -115,7 +146,7 @@ export default function HomeScreen() {
   };
 
   // Open existing activities
-  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -205,16 +236,25 @@ export default function HomeScreen() {
             </View>
           </View>
 
+          {/* Dynamic progress numbers */}
           <View style={styles.progressNumbers}>
             <Text style={styles.progressNumber}>
-              0 of 6 lessons completed
+              {completedCount} of 6 lessons completed
             </Text>
 
-            <Text style={styles.progressPercent}>0%</Text>
+            <Text style={styles.progressPercent}>
+              {progressPercent}%
+            </Text>
           </View>
 
+          {/* Dynamic progress bar */}
           <View style={styles.progressTrack}>
-            <View style={styles.progressFill} />
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${progressPercent}%` },
+              ]}
+            />
           </View>
 
           <Text style={styles.progressNote}>
@@ -307,9 +347,8 @@ export default function HomeScreen() {
           </Text>
 
           {/* Spot the Red Flags */}
-         
+
           {/* Cyber Safety Quiz */}
-        
         </Animated.View>
 
         {/* Daily Safety Tip */}
@@ -520,7 +559,6 @@ const styles = StyleSheet.create({
   },
 
   progressFill: {
-    width: '0%',
     height: '100%',
     backgroundColor: '#14B8A6',
     borderRadius: 10,
